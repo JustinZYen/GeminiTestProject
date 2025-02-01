@@ -15,7 +15,7 @@ model = genai.GenerativeModel("gemini-1.5-flash")
 def summarize_note(resume_text:str,resume_headings:str):
     prompt = ("You are an helpful assistant. Your task is to parse a resume into JSON format."
               "Capitalize the key names appropriately, using _ in the place of spaces." 
-              "The keys for link values should have an additional _link appended to their name."
+              "The keys for link values should have an additional _Link appended to their name."
               f"{f"Follow this set of headings: {resume_headings}" if resume_headings else ""}"
               f"The resume: {resume_text}")
     response = model.generate_content(prompt)
@@ -57,13 +57,15 @@ if uploaded_file:
 else:
     resume_text = st.text_area("Or, enter your resume here")
 
-resume_headings = st.text_area("Enter resume headings here (optional)")
+resume_headings = st.text_area("Enter resume headings here (optional)",height=68)
 
-if (st.button("Convert to JSON")):
+convert_button = st.button("Convert to JSON")
+st.divider()
+if (convert_button):
     if resume_text:
-        summary = summarize_note(resume_text,resume_headings)
+        resume_json = summarize_note(resume_text,resume_headings)
         st.subheader("JSON")
-        st.write(summary)
+        st.write(resume_json)
     else:
         st.warning("Please enter a note into the text box")
 
