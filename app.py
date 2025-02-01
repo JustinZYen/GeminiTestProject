@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 import google.generativeai as genai
 import streamlit as st
 from docx import Document
+from docx.text.hyperlink import Hyperlink
 from PyPDF2 import PdfReader
 
 load_dotenv()
@@ -12,25 +13,31 @@ genai.configure(api_key=API_KEY)
 model = genai.GenerativeModel("gemini-1.5-flash")
 
 def summarize_note(note_text:str):
-    prompt = f'''You are a helpful assistant. Your task is to summarize these notes into a clear and concise
-    format. Here are the notes: {note_text}'''
-
+    prompt = f'''You are an helpful assistant. Your task is to parse a resume into JSON format: {note_text}'''
     response = model.generate_content(prompt)
     result = response.text
     return result
 
 st.title("Note Summarizer")
-st.write("Enter your notes and get a summarized version of it.")
+st.write("Upload your resume (docx preferred due to preserving links) or type it in and receive a parsed version in JSON.")
 
 def extract_text_from_docx(file):
     document = Document(file)
-    full_text = [paragraph.text for paragraph in document.paragraphs]
+    full_text = []
+    for paragraph in document.paragraphs:
+        paragraph_text = []
+        for group in paragraph.iter_inner_content():
+            if isinstance(group,Hyperlink):
+                paragraph_text.append(group.text + "/" + group.address)
+            else: #it is a run
+                paragraph_text.append(group.text)
+        full_text.append("".join(paragraph_text))
     return "\n".join(full_text)
 
 def extract_text_from_pdf(file):
     pdf_reader = PdfReader(file)
     full_text = [page.extract_text() for page in pdf_reader.pages]
-    return "\n".join(full_text)
+    return "".join(full_text) # They get extracted with newlines by themselves
 
 uploaded_file = st.file_uploader("Upload a file (.docx or .pdf)", type=["docx","pdf"])
 
