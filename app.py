@@ -5,6 +5,7 @@ import streamlit as st
 from docx import Document
 from docx.text.hyperlink import Hyperlink
 from PyPDF2 import PdfReader
+import json
 
 load_dotenv()
 API_KEY = os.getenv("GEMINI_API_KEY")
@@ -65,7 +66,15 @@ if (convert_button):
     if resume_text:
         resume_json = summarize_note(resume_text,resume_headings)
         st.subheader("JSON")
-        st.write(resume_json)
+        try:
+            if resume_json.index("{") < resume_json.index("["): # Check if outside layer of json is array or object
+                json_result = json.loads(resume_json[resume_json.index("{"):resume_json.rfind("}")+1])
+            else:
+                json_result = json.loads(resume_json[resume_json.index("["):resume_json.rfind("]")+1])
+            st.json(json_result)
+        except:
+            st.write(resume_json) # In case Gemini returns something funky
+
     else:
         st.warning("Please enter a note into the text box")
 
