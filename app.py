@@ -12,14 +12,16 @@ API_KEY = os.getenv("GEMINI_API_KEY")
 genai.configure(api_key=API_KEY)
 model = genai.GenerativeModel("gemini-1.5-flash")
 
-def summarize_note(note_text:str):
+def summarize_note(resume_text:str,resume_headings:str):
     prompt = ("You are an helpful assistant. Your task is to parse a resume into JSON format."
               "Capitalize the key names appropriately, using _ in the place of spaces." 
               "The keys for link values should have an additional _link appended to their name."
-              f"The resume: {note_text}")
+              f"{f"Follow this set of headings: {resume_headings}" if resume_headings else ""}"
+              f"The resume: {resume_text}")
     response = model.generate_content(prompt)
     result = response.text
     return result
+    #return prompt
 
 st.title("JSON Parser")
 st.write("Upload your resume (docx preferred due to preserving links) or type it in and receive a parsed version in JSON.")
@@ -46,18 +48,20 @@ uploaded_file = st.file_uploader("Upload a file (.docx or .pdf)", type=["docx","
 
 if uploaded_file:
     if uploaded_file.type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
-        note_text = extract_text_from_docx(uploaded_file)
+        resume_text = extract_text_from_docx(uploaded_file)
     elif uploaded_file.type == "application/pdf":
-        note_text = extract_text_from_pdf(uploaded_file)
+        resume_text = extract_text_from_pdf(uploaded_file)
     else:
         st.error("Unsupported file type.")
-        note_text = None
+        resume_text = None
 else:
-    note_text = st.text_area("Enter your note here")
+    resume_text = st.text_area("Or, enter your resume here")
+
+resume_headings = st.text_area("Enter resume headings here (optional)")
 
 if (st.button("Convert to JSON")):
-    if note_text:
-        summary = summarize_note(note_text)
+    if resume_text:
+        summary = summarize_note(resume_text,resume_headings)
         st.subheader("JSON")
         st.write(summary)
     else:
