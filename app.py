@@ -13,7 +13,10 @@ genai.configure(api_key=API_KEY)
 model = genai.GenerativeModel("gemini-1.5-flash")
 
 def summarize_note(note_text:str):
-    prompt = f'''You are an helpful assistant. Your task is to parse a resume into JSON format: {note_text}'''
+    prompt = ("You are an helpful assistant. Your task is to parse a resume into JSON format."
+              "Capitalize the key names appropriately, using _ in the place of spaces." 
+              "The keys for link values should have an additional _link appended to their name."
+              f"The resume: {note_text}")
     response = model.generate_content(prompt)
     result = response.text
     return result
