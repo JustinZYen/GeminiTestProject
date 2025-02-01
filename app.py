@@ -18,7 +18,7 @@ def summarize_note(note_text:str):
     result = response.text
     return result
 
-st.title("Note Summarizer")
+st.title("JSON Parser")
 st.write("Upload your resume (docx preferred due to preserving links) or type it in and receive a parsed version in JSON.")
 
 def extract_text_from_docx(file):
@@ -52,10 +52,10 @@ if uploaded_file:
 else:
     note_text = st.text_area("Enter your note here")
 
-if (st.button("Summarize")):
+if (st.button("Convert to JSON")):
     if note_text:
         summary = summarize_note(note_text)
-        st.subheader("Summary")
+        st.subheader("JSON")
         st.write(summary)
     else:
         st.warning("Please enter a note into the text box")
